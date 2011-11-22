@@ -40,11 +40,11 @@ module Fog
           ::Fission::VM.delete @raw.name
         end
 
-        def start
+        def start(options={ :headless => false})
           requires :raw
 
           unless state=="running"
-            @raw.start
+            @raw.start(:headless => options[:headless])
             return true
           else
             return false
