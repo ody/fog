@@ -9,18 +9,18 @@ module Fog
 
         model Fog::Compute::Vmfusion::Server
 
-        def all(filter=nil)
+        def all(filter = nil)
 
-          data=[]
+          data = []
 
-          filter={} if filter.nil?
+          filter = {} if filter.nil?
           unless filter.has_key?(:name)
-            vms=::Fission::VM.all
+            vms=::Fission::VM.all.data
             vms.each do |vm|
-              data << { :raw => vm}
+              data << { :raw => vm }
             end
           else
-            data << { :raw => ::Fission::VM.new(filter[:name])}
+            data << { :raw => ::Fission::VM.new(filter[:name]) }
           end
 
           load(data)
@@ -28,7 +28,7 @@ module Fog
         end
 
         def get(name)
-          self.all(:name =>name).first
+          self.all(:name => name).first
         end
 
       end
