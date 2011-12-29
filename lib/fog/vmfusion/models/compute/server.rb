@@ -50,7 +50,7 @@ module Fog
             end
           end
 
-          ::Fission::VM.delete @raw.name
+          ::Fission::VM.new(@raw.name).delete
         end
 
         # Start is pretty self explanatory...if you pass :headless as true you
@@ -66,8 +66,8 @@ module Fog
           end
         end
 
-        # Were covering a lot of bases here with the different ways one can stop
-        # a VM from running.
+        # We're covering a lot of bases here with the different ways one can
+        # stop a VM from running.
 
         # Stop is a hard stop, like pulling out the power cord.
         def stop
@@ -91,7 +91,7 @@ module Fog
         end
 
         # This is a graceful shutdown but Fusion is only capable of a graceful
-        # shutdown if tools are installed.  Fussion does the right thing though
+        # shutdown if tools are installed.  Fusion does the right thing though
         # and if graceful can't be initiated it just does likes a stop.
         def shutdown
           requires :raw
@@ -157,17 +157,20 @@ module Fog
         # VM resides on.
         def ipaddress
           requires :raw
-          @raw.network_info.data['ethernet0']['ip_address']
+          first_int = @raw.network_info.data.keys.first
+          @raw.network_info.data[first_int]['ip_address']
         end
 
         # Keeping these three methods around for API compatibility reasons.
         # Makes the vmfusion provider function similar to cloud providers and
-        # the vsphere provider.
-        def public_ip_address(:public)
+        # the vsphere provider.  Future goal is to add an actual private and
+        # public concept.  Needs changes to fission and a determination what is
+        # a public or private address here; bridge, nat, host-only.
+        def public_ip_address
           ipaddress
         end
 
-        def private_ip_address(:private)
+        def private_ip_address
           ipaddress
         end
 
@@ -283,7 +286,6 @@ module Fog
 
           merge_attributes(raw_attributes)
         end
-
       end
     end
   end
