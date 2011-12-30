@@ -1,5 +1,4 @@
 require 'fog/core/model'
-require 'ruby-debug'
 
 module Fog
   module Compute
@@ -136,7 +135,7 @@ module Fog
         # running, not running, or suspended.
         def power_state
           requires :raw
-          @raw[:state]
+          @raw[:fission].state.data
         end
 
         def ready?
@@ -277,7 +276,6 @@ module Fog
           raw_attributes = {
             :name            => new_raw[:fission].name,
             :power_state     => new_raw[:state],
-            :ipaddress       => new_raw[:fission].network_info.data['ethernet0']['ip_address'],
             :operatingsystem => new_raw[:fission].guestos.data,
             :uuid            => new_raw[:fission].uuids.data['bios'],
             :instance_uuid   => new_raw[:fission].uuids.data['location']

@@ -23,7 +23,8 @@ module Fog
                                    :state   => states[vm.name] } }
             end
           else
-            data << { :raw => ::Fission::VM.new(filter[:name]) }
+            data << { :raw => { :fission => ::Fission::VM.new(filter[:name]),
+                                :state   => states[filter[:name]] } }
           end
 
           load(data)
