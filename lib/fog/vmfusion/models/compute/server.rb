@@ -1,4 +1,5 @@
 require 'fog/core/model'
+require 'ruby-debug'
 
 module Fog
   module Compute
@@ -21,8 +22,6 @@ module Fog
 
         attr_accessor :password
         attr_writer   :private_key, :private_key_path, :public_key, :public_key_path, :username
-        def initalize(attributes = {})
-        end
 
         # There is currently no documented model of creating VMs from scratch
         # sans Fusion's wizard.
@@ -35,7 +34,7 @@ module Fog
         def clone(name)
           requires :raw
 
-          ::Fission::VM.clone(@raw.name,name)
+          ::Fission::VM.clone(@raw[:fission].name,name)
           return connection.servers.get(name)
         end
 
@@ -50,7 +49,7 @@ module Fog
             end
           end
 
-          ::Fission::VM.new(@raw.name).delete
+          @raw[:fission].delete
         end
 
         # Start is pretty self explanatory...if you pass :headless as true you
@@ -59,7 +58,7 @@ module Fog
           requires :raw
 
           unless ready?
-            @raw.start(:headless => options[:headless])
+            @raw[:fission].start(:headless => options[:headless])
             return true
           else
             return false
@@ -74,7 +73,7 @@ module Fog
           requires :raw
 
           if ready?
-            @raw.stop(:hard => true)
+            @raw[:fission].stop(:hard => true)
             return true
           else
             return false
@@ -96,7 +95,7 @@ module Fog
         def shutdown
           requires :raw
           if ready?
-            @raw.stop
+            @raw[:fission].stop
             return true
           else
             return false
@@ -124,7 +123,7 @@ module Fog
         def suspend
           requires :raw
           if ready?
-            @raw.suspend
+            @raw[:fission].suspend
             return true
           else
             return false
@@ -137,18 +136,18 @@ module Fog
         # running, not running, or suspended.
         def power_state
           requires :raw
-          @raw.state.data
+          @raw[:state]
         end
 
         def ready?
           requires :raw
-          @raw.running?.data
+          @raw[:fission].running?.data
         end
 
         # Path to the VM's vmx file on the local disk.
         def path
           requires :raw
-          @raw.path
+          @raw[:fission].path
         end
 
         # We obtain the first ipaddress.  This should generally be a safe
@@ -157,8 +156,8 @@ module Fog
         # VM resides on.
         def ipaddress
           requires :raw
-          first_int = @raw.network_info.data.keys.first
-          @raw.network_info.data[first_int]['ip_address']
+          first_int = @raw[:fission].network_info.data.keys.first
+          @raw[:fission].network_info.data[first_int]['ip_address']
         end
 
         # Keeping these three methods around for API compatibility reasons.
@@ -182,7 +181,7 @@ module Fog
         # doing the same thing for the vSphere provider.
         def mac_addresses
           requires :raw
-          macs = @raw.mac_addresses.data
+          macs = @raw[:fission].mac_addresses.data
         end
 
         # Sets up a conveinent way to SSH into a Fusion VM using credentials
@@ -276,12 +275,12 @@ module Fog
           @raw = new_raw
 
           raw_attributes = {
-            :name            => new_raw.name,
-            :power_state     => new_raw.state.data,
-            :ipaddress       => new_raw.network_info.data['ethernet0']['ip_address'],
-            :operatingsystem => new_raw.guestos.data,
-            :uuid            => new_raw.uuids.data['bios'],
-            :instance_uuid   => new_raw.uuids.data['location']
+            :name            => new_raw[:fission].name,
+            :power_state     => new_raw[:state],
+            :ipaddress       => new_raw[:fission].network_info.data['ethernet0']['ip_address'],
+            :operatingsystem => new_raw[:fission].guestos.data,
+            :uuid            => new_raw[:fission].uuids.data['bios'],
+            :instance_uuid   => new_raw[:fission].uuids.data['location']
           }
 
           merge_attributes(raw_attributes)
