@@ -278,7 +278,10 @@ module Fog
             :power_state     => new_raw[:state],
             :operatingsystem => new_raw[:fission].guestos.data,
             :uuid            => new_raw[:fission].uuids.data['bios'],
-            :instance_uuid   => new_raw[:fission].uuids.data['location']
+            :instance_uuid   => new_raw[:fission].uuids.data['location'],
+            :ipaddress       => ipaddress,
+            :mac_addresses   => mac_addresses,
+            :path            => path
           }
 
           merge_attributes(raw_attributes)
