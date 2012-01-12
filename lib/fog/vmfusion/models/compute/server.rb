@@ -155,8 +155,7 @@ module Fog
         # VM resides on.
         def ipaddress
           requires :raw
-          first_int = @raw[:fission].network_info.data.keys.first
-          @raw[:fission].network_info.data[first_int]['ip_address']
+          ip(@raw[:fission])
         end
 
         # Keeping these three methods around for API compatibility reasons.
@@ -180,7 +179,7 @@ module Fog
         # doing the same thing for the vSphere provider.
         def mac_addresses
           requires :raw
-          macs = @raw[:fission].mac_addresses.data
+          macs(@raw[:fission])
         end
 
         # Sets up a conveinent way to SSH into a Fusion VM using credentials
@@ -266,6 +265,15 @@ module Fog
         end
 
         private
+        def ip(fission)
+          first_int = fission.network_info.data.keys.first
+          fission.network_info.data[first_int]['ip_address']
+        end
+
+        def macs(fission)
+          fission.mac_addresses.data
+        end
+
         def raw
           @raw
         end
@@ -279,9 +287,9 @@ module Fog
             :operatingsystem => new_raw[:fission].guestos.data,
             :uuid            => new_raw[:fission].uuids.data['bios'],
             :instance_uuid   => new_raw[:fission].uuids.data['location'],
-            :ipaddress       => ipaddress,
-            :mac_addresses   => mac_addresses,
-            :path            => path
+            :ipaddress       => ip(new_raw[:fission]),
+            :mac_addresses   => macs(new_raw[:fission]),
+            :path            => new_raw[:fission].path
           }
 
           merge_attributes(raw_attributes)
